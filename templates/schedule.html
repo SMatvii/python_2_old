@@ -1,0 +1,135 @@
+{% extends "base.html" %}
+
+{% block title %}Розклад - Шкільний розклад{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>📅 Розклад уроків</h2>
+    {% if session.role in ['admin', 'teacher'] %}
+        <a href="{{ url_for('add_lesson') }}" class="btn btn-success">➕ Додати урок</a>
+    {% endif %}
+</div>
+
+<div class="row">
+    {% for day, lessons in schedule.items() %}
+    <div class="col-lg-6 mb-4">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">{{ day }}</h5>
+            </div>
+            <div class="card-body">
+                {% if lessons %}
+                    <div class="timeline">
+                        {% for lesson in lessons %}
+                        <div class="timeline-item mb-3">
+                            <div class="card border-start border-4 border-info">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div>
+                                            <h6 class="card-title mb-1">📚 {{ lesson.subject }}</h6>
+                                            <p class="card-text mb-1">
+                                                <small class="text-muted">
+                                                    🕐 {{ lesson.time_start }} - {{ lesson.time_end }}
+                                                </small>
+                                            </p>
+                                            <p class="card-text mb-1">
+                                                <small>👨‍🏫 {{ lesson.teacher }}</small>
+                                            </p>
+                                            <p class="card-text mb-0">
+                                                <small>🏫 Кабінет: {{ lesson.classroom }}</small>
+                                            </p>
+                                        </div>
+                                        {% if session.role in ['admin', 'teacher'] %}
+                                        <div class="dropdown">
+                                            <button class="btn btn-sm btn-outline-secondary dropdown-toggle" 
+                                                    type="button" data-bs-toggle="dropdown">
+                                                ⚙️
+                                            </button>
+                                            <ul class="dropdown-menu">
+                                                <li><a class="dropdown-item" href="#" 
+                                                       onclick="editLesson({{ lesson.id }})">✏️ Редагувати</a></li>
+                                                <li><a class="dropdown-item text-danger" href="#" 
+                                                       onclick="deleteLesson({{ lesson.id }})">🗑️ Видалити</a></li>
+                                            </ul>
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="text-center text-muted py-4">
+                        <p>📭 Немає уроків на цей день</p>
+                        {% if session.role in ['admin', 'teacher'] %}
+                            <a href="{{ url_for('add_lesson') }}" class="btn btn-outline-primary">
+                                ➕ Додати перший урок
+                            </a>
+                        {% endif %}
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card bg-light">
+            <div class="card-body">
+                <h5>ℹ️ Корисна інформація</h5>
+                <div class="row">
+                    <div class="col-md-4">
+                        <p><strong>🕐 Перша пара:</strong> 08:00 - 09:35</p>
+                        <p><strong>🕑 Друга пара:</strong> 09:50 - 11:25</p>
+                        <p><strong>🕒 Третя пара:</strong> 11:40 - 13:15</p>
+                    </div>
+                    <div class="col-md-4">
+                        <p><strong>🕓 Четверта пара:</strong> 14:00 - 15:35</p>
+                        <p><strong>🕔 П'ята пара:</strong> 15:50 - 17:25</p>
+                        <p><strong>🕕 Шоста пара:</strong> 17:40 - 19:15</p>
+                    </div>
+                    <div class="col-md-4">
+                        <p><strong>🍽️ Велика перерва:</strong> 13:15 - 14:00</p>
+                        <p><strong>📞 Довідка:</strong> +380 (44) 123-45-67</p>
+                        <p><strong>📧 Email:</strong> info@school.edu.ua</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function editLesson(lessonId) {
+    alert('Функція редагування буде додана в наступних версіях');
+}
+
+function deleteLesson(lessonId) {
+    if (confirm('Ви впевнені, що хочете видалити цей урок?')) {
+        fetch(`/delete_lesson/${lessonId}`, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('Помилка при видаленні уроку');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Помилка при видаленні уроку');
+        });
+    }
+}
+</script>
+{% endblock %}

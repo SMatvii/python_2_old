@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block title %}Вхід - Шкільний розклад{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="text-center">🔑 Вхід в систему</h3>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    <div class="mb-3">
+                        <label for="username" class="form-label">Ім'я користувача</label>
+                        <input type="text" class="form-control" id="username" name="username" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="password" class="form-label">Пароль</label>
+                        <input type="password" class="form-control" id="password" name="password" required>
+                    </div>
+                    
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary btn-lg">🔑 Увійти</button>
+                    </div>
+                </form>
+                
+                <div class="text-center mt-3">
+                    <p>Ще не маєте акаунту? <a href="{{ url_for('register') }}">Зареєструватися</a></p>
+                </div>
+                
+                <hr>
+                
+                <div class="text-center">
+                    <h6>Демо акаунти для тестування:</h6>
+                    <small class="text-muted">
+                        Адміністратор: admin/admin123<br>
+                        Вчитель: teacher/teacher123<br>
+                        Учень: student/student123
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

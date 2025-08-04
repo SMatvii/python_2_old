@@ -1,0 +1,186 @@
+{% extends "base.html" %}
+
+{% block title %}Додати урок - Шкільний розклад{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h3>➕ Додати новий урок</h3>
+            </div>
+            <div class="card-body">
+                <form method="POST" id="addLessonForm">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="subject" class="form-label">Предмет</label>
+                                <select class="form-select" id="subject" name="subject" required>
+                                    <option value="">Оберіть предмет</option>
+                                    <option value="Математика">📐 Математика</option>
+                                    <option value="Українська мова">📝 Українська мова</option>
+                                    <option value="Англійська мова">🌍 Англійська мова</option>
+                                    <option value="Фізика">⚡ Фізика</option>
+                                    <option value="Хімія">🧪 Хімія</option>
+                                    <option value="Біологія">🌱 Біологія</option>
+                                    <option value="Географія">🌍 Географія</option>
+                                    <option value="Історія">📚 Історія</option>
+                                    <option value="Інформатика">💻 Інформатика</option>
+                                    <option value="Фізкультура">🏃 Фізкультура</option>
+                                    <option value="Мистецтво">🎨 Мистецтво</option>
+                                    <option value="Музика">🎵 Музика</option>
+                                    <option value="Трудове навчання">🔨 Трудове навчання</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="teacher" class="form-label">Вчитель</label>
+                                <input type="text" class="form-control" id="teacher" name="teacher" 
+                                       placeholder="Прізвище та ініціали" required>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="classroom" class="form-label">Кабінет</label>
+                                <input type="text" class="form-control" id="classroom" name="classroom" 
+                                       placeholder="Номер кабінету" required>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="day_of_week" class="form-label">День тижня</label>
+                                <select class="form-select" id="day_of_week" name="day_of_week" required>
+                                    <option value="">Оберіть день</option>
+                                    <option value="Понеділок">Понеділок</option>
+                                    <option value="Вівторок">Вівторок</option>
+                                    <option value="Середа">Середа</option>
+                                    <option value="Четвер">Четвер</option>
+                                    <option value="П'ятниця">П'ятниця</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="time_start" class="form-label">Час початку</label>
+                                <select class="form-select" id="time_start" name="time_start" required>
+                                    <option value="">Оберіть час</option>
+                                    <option value="08:00">08:00 (1-а пара)</option>
+                                    <option value="09:50">09:50 (2-а пара)</option>
+                                    <option value="11:40">11:40 (3-я пара)</option>
+                                    <option value="14:00">14:00 (4-а пара)</option>
+                                    <option value="15:50">15:50 (5-а пара)</option>
+                                    <option value="17:40">17:40 (6-а пара)</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="time_end" class="form-label">Час закінчення</label>
+                                <select class="form-select" id="time_end" name="time_end" required>
+                                    <option value="">Оберіть час</option>
+                                    <option value="09:35">09:35 (1-а пара)</option>
+                                    <option value="11:25">11:25 (2-а пара)</option>
+                                    <option value="13:15">13:15 (3-я пара)</option>
+                                    <option value="15:35">15:35 (4-а пара)</option>
+                                    <option value="17:25">17:25 (5-а пара)</option>
+                                    <option value="19:15">19:15 (6-а пара)</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between">
+                        <a href="{{ url_for('schedule') }}" class="btn btn-secondary">
+                            ⬅️ Назад до розкладу
+                        </a>
+                        <button type="submit" class="btn btn-success">
+                            ➕ Додати урок
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5>ℹ️ Довідкова інформація</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6>Розклад дзвінків:</h6>
+                        <ul class="list-unstyled">
+                            <li><strong>1-а пара:</strong> 08:00 - 09:35</li>
+                            <li><strong>2-а пара:</strong> 09:50 - 11:25</li>
+                            <li><strong>3-я пара:</strong> 11:40 - 13:15</li>
+                            <li><strong>4-а пара:</strong> 14:00 - 15:35</li>
+                            <li><strong>5-а пара:</strong> 15:50 - 17:25</li>
+                            <li><strong>6-а пара:</strong> 17:40 - 19:15</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>Рекомендації:</h6>
+                        <ul>
+                            <li>Перевіряйте наявність вільного кабінету</li>
+                            <li>Враховуйте навантаження вчителя</li>
+                            <li>Дотримуйтесь санітарних норм</li>
+                            <li>Плануйте перерви між парами</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.getElementById('time_start').addEventListener('change', function() {
+    const timeEnd = document.getElementById('time_end');
+    const timeMap = {
+        '08:00': '09:35',
+        '09:50': '11:25', 
+        '11:40': '13:15',
+        '14:00': '15:35',
+        '15:50': '17:25',
+        '17:40': '19:15'
+    };
+    
+    if (timeMap[this.value]) {
+        timeEnd.value = timeMap[this.value];
+    }
+});
+
+document.getElementById('addLessonForm').addEventListener('submit', function(e) {
+    const subject = document.getElementById('subject').value;
+    const teacher = document.getElementById('teacher').value;
+    const classroom = document.getElementById('classroom').value;
+    const dayOfWeek = document.getElementById('day_of_week').value;
+    const timeStart = document.getElementById('time_start').value;
+    const timeEnd = document.getElementById('time_end').value;
+    
+    if (!subject || !teacher || !classroom || !dayOfWeek || !timeStart || !timeEnd) {
+        e.preventDefault();
+        alert('Будь ласка, заповніть всі поля');
+        return;
+    }
+    
+    if (teacher.length < 2) {
+        e.preventDefault();
+        alert('Введіть повне ім\'я вчителя');
+        return;
+    }
+});
+</script>
+{% endblock %}

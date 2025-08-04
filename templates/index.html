@@ -1,0 +1,161 @@
+{% extends "base.html" %}
+
+{% block title %}Головна - Шкільний розклад{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header">
+                <h2>🏫 Ласкаво просимо до системи шкільного розкладу!</h2>
+            </div>
+            <div class="card-body">
+                {% if session.user_id %}
+                    <h4>Привіт, {{ session.username }}! 👋</h4>
+                    <p class="lead">Ваша роль в системі: <span class="badge bg-primary">{{ session.role }}</span></p>
+                    
+                    <div class="row mt-4">
+                        <div class="col-md-6">
+                            <div class="card bg-light">
+                                <div class="card-body text-center">
+                                    <h5 class="card-title">📅 Розклад</h5>
+                                    <p class="card-text">Переглядайте розклад уроків на тиждень</p>
+                                    <a href="{{ url_for('schedule') }}" class="btn btn-primary">Перейти до розкладу</a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card bg-light">
+                                <div class="card-body text-center">
+                                    <h5 class="card-title">📝 Завдання</h5>
+                                    <p class="card-text">Керуйте своїми навчальними завданнями</p>
+                                    <a href="{{ url_for('tasks') }}" class="btn btn-success">Мої завдання</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    {% if session.role in ['admin', 'teacher'] %}
+                    <div class="row mt-3">
+                        <div class="col-md-6">
+                            <div class="card bg-warning text-dark">
+                                <div class="card-body text-center">
+                                    <h5 class="card-title">👨‍🏫 Адміністрування</h5>
+                                    <p class="card-text">Додавайте нові уроки до розкладу</p>
+                                    <a href="{{ url_for('add_lesson') }}" class="btn btn-dark">Додати урок</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                {% else %}
+                    <h4>🔐 Будь ласка, увійдіть в систему</h4>
+                    <p class="lead">Щоб отримати доступ до розкладу та завдань, потрібно зареєструватися або увійти в систему.</p>
+                    
+                    <div class="d-flex gap-3">
+                        <a href="{{ url_for('login') }}" class="btn btn-primary btn-lg">🔑 Вхід</a>
+                        <a href="{{ url_for('register') }}" class="btn btn-outline-primary btn-lg">📝 Реєстрація</a>
+                    </div>
+                    
+                    <div class="mt-4">
+                        <h5>🧠 Тест доступний всім</h5>
+                        <p>Ви можете пройти тест навіть без реєстрації!</p>
+                        <a href="{{ url_for('test') }}" class="btn btn-info">Пройти тест</a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4">
+
+        <div class="card">
+            <div class="card-header">
+                <h5>🌤️ Погода</h5>
+            </div>
+            <div class="card-body">
+                {% if weather %}
+                    <div class="text-center">
+                        <h4>{{ weather.name }}</h4>
+                        <div class="weather-icon">
+                            <img src="http://openweathermap.org/img/w/{{ weather.weather[0].icon }}.png" 
+                                 alt="{{ weather.weather[0].description }}" class="img-fluid">
+                        </div>
+                        <h3 class="text-primary">{{ weather.main.temp|round|int }}°C</h3>
+                        <p class="mb-1">{{ weather.weather[0].description|title }}</p>
+                        <small class="text-muted">
+                            Відчувається як {{ weather.main.feels_like|round|int }}°C<br>
+                            Вологість: {{ weather.main.humidity }}%<br>
+                            Тиск: {{ weather.main.pressure }} hPa
+                        </small>
+                    </div>
+                {% else %}
+                    <div class="text-center text-muted">
+                        <p>❌ Не вдалося завантажити дані про погоду</p>
+                        <small>Перевірте API ключ OpenWeatherMap</small>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="card mt-3">
+            <div class="card-header">
+                <h5>🔗 Швидкі посилання</h5>
+            </div>
+            <div class="card-body">
+                <div class="list-group list-group-flush">
+                    <a href="{{ url_for('test') }}" class="list-group-item list-group-item-action">
+                        🧠 Пройти тест
+                    </a>
+                    {% if session.user_id %}
+                        <a href="{{ url_for('schedule') }}" class="list-group-item list-group-item-action">
+                            📅 Мій розклад
+                        </a>
+                        <a href="{{ url_for('tasks') }}" class="list-group-item list-group-item-action">
+                            📝 Мої завдання
+                        </a>
+                    {% else %}
+                        <a href="{{ url_for('login') }}" class="list-group-item list-group-item-action">
+                            🔑 Увійти в систему
+                        </a>
+                        <a href="{{ url_for('register') }}" class="list-group-item list-group-item-action">
+                            📝 Зареєструватися
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-5">
+    <div class="col-12">
+        <div class="card bg-light">
+            <div class="card-body">
+                <h3 class="text-center mb-4">ℹ️ Про систему</h3>
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="text-center">
+                            <h5>📚 Розклад уроків</h5>
+                            <p>Зберігайте та переглядайте розклад занять на тиждень</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="text-center">
+                            <h5>📝 Управління завданнями</h5>
+                            <p>Створюйте, відстежуйте та видаляйте навчальні завдання</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="text-center">
+                            <h5>🧠 Тестування</h5>
+                            <p>Проходьте тести та відстежуйте свій прогрес</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

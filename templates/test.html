@@ -1,0 +1,369 @@
+{% extends "base.html" %}
+
+{% block title %}Тест - Шкільний розклад{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-10">
+        <div class="card">
+            <div class="card-header text-center">
+                <h2>🧠 Загальний тест знань</h2>
+                <p class="mb-0">Перевірте свої знання з різних предметів</p>
+            </div>
+            <div class="card-body">
+                
+                <div id="instructions" class="text-center mb-4">
+                    <div class="alert alert-info">
+                        <h5>📋 Інструкції до тесту</h5>
+                        <ul class="list-unstyled">
+                            <li>• Тест містить 10 запитань з різних предметів</li>
+                            <li>• На кожне запитання є 4 варіанти відповіді</li>
+                            <li>• Оберіть один правильний варіант</li>
+                            <li>• Після завершення ви побачите результат</li>
+                            {% if session.user_id %}
+                                <li>• Ваш результат буде збережено в системі</li>
+                            {% else %}
+                                <li>• Зареєструйтеся, щоб зберегти результат</li>
+                            {% endif %}
+                        </ul>
+                    </div>
+                    <button class="btn btn-primary btn-lg" onclick="startTest()">
+                        🚀 Розпочати тест
+                    </button>
+                </div>
+
+                <div id="testContainer" style="display: none;">
+                    <div class="progress mb-4">
+                        <div id="progressBar" class="progress-bar" role="progressbar" 
+                             style="width: 0%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
+                            0/10
+                        </div>
+                    </div>
+
+                    <div id="questionContainer">
+                    </div>
+
+                    <div class="d-flex justify-content-between mt-4">
+                        <button id="prevBtn" class="btn btn-secondary" onclick="previousQuestion()" style="display: none;">
+                            ⬅️ Попереднє
+                        </button>
+                        <button id="nextBtn" class="btn btn-primary" onclick="nextQuestion()">
+                            Наступне ➡️
+                        </button>
+                        <button id="finishBtn" class="btn btn-success" onclick="finishTest()" style="display: none;">
+                            ✅ Завершити тест
+                        </button>
+                    </div>
+                </div>
+
+                <div id="resultsContainer" style="display: none;">
+                    <div class="text-center">
+                        <h3>🎉 Тест завершено!</h3>
+                        <div id="scoreDisplay" class="mt-3"></div>
+                        <div id="detailedResults" class="mt-4"></div>
+                        <button class="btn btn-primary mt-3" onclick="retakeTest()">
+                            🔄 Пройти ще раз
+                        </button>
+                        <a href="{{ url_for('index') }}" class="btn btn-secondary mt-3">
+                            🏠 На головну
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+const questions = [
+    {
+        subject: "Математика",
+        question: "Чому дорівнює корінь із 144?",
+        options: ["12", "14", "16", "10"],
+        correct: 0
+    },
+    {
+        subject: "Українська мова",
+        question: "Скільки відмінків в українській мові?",
+        options: ["5", "6", "7", "8"],
+        correct: 2
+    },
+    {
+        subject: "Географія",
+        question: "Яка найвища гора в Україні?",
+        options: ["Говерла", "Петрос", "Піп Іван", "Чорногора"],
+        correct: 0
+    },
+    {
+        subject: "Історія",
+        question: "В якому році Україна отримала незалежність?",
+        options: ["1990", "1991", "1992", "1993"],
+        correct: 1
+    },
+    {
+        subject: "Фізика",
+        question: "Одиницею вимірювання сили є:",
+        options: ["Джоуль", "Ватт", "Ньютон", "Паскаль"],
+        correct: 2
+    },
+    {
+        subject: "Хімія",
+        question: "Хімічний символ кисню:",
+        options: ["O", "Ox", "K", "H"],
+        correct: 0
+    },
+    {
+        subject: "Біологія",
+        question: "Скільки камер має серце людини?",
+        options: ["2", "3", "4", "5"],
+        correct: 2
+    },
+    {
+        subject: "Англійська мова",
+        question: "Як англійською мовою буде 'книга'?",
+        options: ["Book", "Look", "Cook", "Hook"],
+        correct: 0
+    },
+    {
+        subject: "Інформатика",
+        question: "Що таке HTML?",
+        options: [
+            "Мова програмування", 
+            "Мова розмітки", 
+            "База даних", 
+            "Операційна система"
+        ],
+        correct: 1
+    },
+    {
+        subject: "Математика",
+        question: "Чому дорівнює 15% від 200?",
+        options: ["25", "30", "35", "40"],
+        correct: 1
+    }
+];
+
+let currentQuestion = 0;
+let userAnswers = [];
+let startTime = null;
+
+function startTest() {
+    document.getElementById('instructions').style.display = 'none';
+    document.getElementById('testContainer').style.display = 'block';
+    startTime = new Date();
+    currentQuestion = 0;
+    userAnswers = [];
+    showQuestion();
+}
+
+function showQuestion() {
+    const question = questions[currentQuestion];
+    const container = document.getElementById('questionContainer');
+    
+    container.innerHTML = `
+        <div class="card">
+            <div class="card-header">
+                <div class="d-flex justify-content-between align-items-center">
+                    <span class="badge bg-secondary">${question.subject}</span>
+                    <span class="text-muted">Запитання ${currentQuestion + 1} з ${questions.length}</span>
+                </div>
+            </div>
+            <div class="card-body">
+                <h5 class="card-title">${question.question}</h5>
+                <div class="mt-3">
+                    ${question.options.map((option, index) => `
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="radio" 
+                                   name="answer" value="${index}" id="option${index}"
+                                   ${userAnswers[currentQuestion] === index ? 'checked' : ''}>
+                            <label class="form-check-label" for="option${index}">
+                                ${option}
+                            </label>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+        </div>
+    `;
+    
+    updateProgress();
+    updateButtons();
+}
+
+function updateProgress() {
+    const progress = ((currentQuestion + 1) / questions.length) * 100;
+    const progressBar = document.getElementById('progressBar');
+    progressBar.style.width = progress + '%';
+    progressBar.textContent = `${currentQuestion + 1}/${questions.length}`;
+}
+
+function updateButtons() {
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const finishBtn = document.getElementById('finishBtn');
+    
+    prevBtn.style.display = currentQuestion > 0 ? 'block' : 'none';
+    
+    if (currentQuestion === questions.length - 1) {
+        nextBtn.style.display = 'none';
+        finishBtn.style.display = 'block';
+    } else {
+        nextBtn.style.display = 'block';
+        finishBtn.style.display = 'none';
+    }
+}
+
+function nextQuestion() {
+    saveCurrentAnswer();
+    if (currentQuestion < questions.length - 1) {
+        currentQuestion++;
+        showQuestion();
+    }
+}
+
+function previousQuestion() {
+    saveCurrentAnswer();
+    if (currentQuestion > 0) {
+        currentQuestion--;
+        showQuestion();
+    }
+}
+
+function saveCurrentAnswer() {
+    const selectedOption = document.querySelector('input[name="answer"]:checked');
+    if (selectedOption) {
+        userAnswers[currentQuestion] = parseInt(selectedOption.value);
+    }
+}
+
+function finishTest() {
+    saveCurrentAnswer();
+    
+    const endTime = new Date();
+    const timeSpent = Math.round((endTime - startTime) / 1000); // в секундах
+    
+    let score = 0;
+    const results = [];
+    
+    for (let i = 0; i < questions.length; i++) {
+        const isCorrect = userAnswers[i] === questions[i].correct;
+        if (isCorrect) score++;
+        
+        results.push({
+            question: questions[i].question,
+            subject: questions[i].subject,
+            userAnswer: userAnswers[i] !== undefined ? questions[i].options[userAnswers[i]] : 'Не відповів',
+            correctAnswer: questions[i].options[questions[i].correct],
+            isCorrect: isCorrect
+        });
+    }
+    
+    showResults(score, timeSpent, results);
+    
+    fetch('/submit_test', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            score: score,
+            total: questions.length,
+            timeSpent: timeSpent,
+            results: results
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log('Результат збережено:', data);
+    })
+    .catch(error => {
+        console.error('Помилка збереження результату:', error);
+    });
+}
+
+function showResults(score, timeSpent, results) {
+    document.getElementById('testContainer').style.display = 'none';
+    document.getElementById('resultsContainer').style.display = 'block';
+    
+    const percentage = Math.round((score / questions.length) * 100);
+    let grade = '';
+    let badgeClass = '';
+    
+    if (percentage >= 90) {
+        grade = 'Відмінно';
+        badgeClass = 'bg-success';
+    } else if (percentage >= 75) {
+        grade = 'Добре';
+        badgeClass = 'bg-info';
+    } else if (percentage >= 60) {
+        grade = 'Задовільно';
+        badgeClass = 'bg-warning';
+    } else {
+        grade = 'Незадовільно';
+        badgeClass = 'bg-danger';
+    }
+    
+    document.getElementById('scoreDisplay').innerHTML = `
+        <div class="card">
+            <div class="card-body text-center">
+                <h1 class="display-4 text-primary">${score}/${questions.length}</h1>
+                <h3><span class="badge ${badgeClass}">${grade} (${percentage}%)</span></h3>
+                <p class="text-muted">Час виконання: ${Math.floor(timeSpent / 60)}:${(timeSpent % 60).toString().padStart(2, '0')}</p>
+            </div>
+        </div>
+    `;
+    
+    const detailedResultsHtml = `
+        <div class="card">
+            <div class="card-header">
+                <h5>📊 Детальні результати</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Предмет</th>
+                                <th>Запитання</th>
+                                <th>Ваша відповідь</th>
+                                <th>Правильна відповідь</th>
+                                <th>Результат</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${results.map((result, index) => `
+                                <tr>
+                                    <td><span class="badge bg-secondary">${result.subject}</span></td>
+                                    <td>${result.question}</td>
+                                    <td class="${result.isCorrect ? 'text-success' : 'text-danger'}">
+                                        ${result.userAnswer}
+                                    </td>
+                                    <td class="text-success">${result.correctAnswer}</td>
+                                    <td>
+                                        ${result.isCorrect ? 
+                                            '<span class="badge bg-success">✅</span>' : 
+                                            '<span class="badge bg-danger">❌</span>'
+                                        }
+                                    </td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.getElementById('detailedResults').innerHTML = detailedResultsHtml;
+}
+
+function retakeTest() {
+    document.getElementById('resultsContainer').style.display = 'none';
+    document.getElementById('instructions').style.display = 'block';
+    currentQuestion = 0;
+    userAnswers = [];
+}
+</script>
+{% endblock %}

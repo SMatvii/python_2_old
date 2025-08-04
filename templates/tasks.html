@@ -1,0 +1,288 @@
+{% extends "base.html" %}
+
+{% block title %}Завдання - Шкільний розклад{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>📝 Мої завдання</h2>
+    <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addTaskModal">
+        ➕ Додати завдання
+    </button>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header">
+                <h5>📋 Список завдань</h5>
+            </div>
+            <div class="card-body">
+                {% if tasks %}
+                    <div id="tasksContainer">
+                        {% for task in tasks %}
+                        <div class="card mb-3 task-item" data-task-id="{{ task.id }}">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div class="flex-grow-1">
+                                        <h6 class="card-title">
+                                            {% if task.completed %}
+                                                <span class="text-decoration-line-through text-muted">{{ task.title }}</span>
+                                                <span class="badge bg-success ms-2">✅ Виконано</span>
+                                            {% else %}
+                                                {{ task.title }}
+                                                {% if task.due_date %}
+                                                    {% set due_date = task.due_date|string %}
+                                                    {% set today = moment().format('YYYY-MM-DD') %}
+                                                    {% if due_date < today %}
+                                                        <span class="badge bg-danger ms-2">⏰ Прострочено</span>
+                                                    {% elif due_date == today %}
+                                                        <span class="badge bg-warning ms-2">📅 Сьогодні</span>
+                                                    {% endif %}
+                                                {% endif %}
+                                            {% endif %}
+                                        </h6>
+                                        <p class="card-text">{{ task.description or 'Немає опису' }}</p>
+                                        <div class="d-flex gap-3">
+                                            <small class="text-muted">📚 Предмет: {{ task.subject }}</small>
+                                            {% if task.due_date %}
+                                                <small class="text-muted">📅 Дедлайн: {{ task.due_date }}</small>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    <div class="dropdown">
+                                        <button class="btn btn-sm btn-outline-secondary dropdown-toggle" 
+                                                type="button" data-bs-toggle="dropdown">
+                                            ⚙️
+                                        </button>
+                                        <ul class="dropdown-menu">
+                                            {% if not task.completed %}
+                                                <li><a class="dropdown-item" href="#" 
+                                                       onclick="toggleTaskComplete({{ task.id }}, true)">
+                                                    ✅ Позначити виконаним
+                                                </a></li>
+                                            {% else %}
+                                                <li><a class="dropdown-item" href="#" 
+                                                       onclick="toggleTaskComplete({{ task.id }}, false)">
+                                                    ↩️ Повернути в роботу
+                                                </a></li>
+                                            {% endif %}
+                                            <li><a class="dropdown-item" href="#" 
+                                                   onclick="editTask({{ task.id }})">✏️ Редагувати</a></li>
+                                            <li><hr class="dropdown-divider"></li>
+                                            <li><a class="dropdown-item text-danger" href="#" 
+                                                   onclick="deleteTask({{ task.id }})">🗑️ Видалити</a></li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="text-center py-5">
+                        <h4 class="text-muted">📭 У вас поки немає завдань</h4>
+                        <p class="text-muted">Натисніть кнопку "Додати завдання" щоб створити перше завдання</p>
+                        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addTaskModal">
+                            ➕ Створити перше завдання
+                        </button>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-header">
+                <h5>📊 Статистика</h5>
+            </div>
+            <div class="card-body">
+                {% set total_tasks = tasks|length %}
+                {% set completed_tasks = tasks|selectattr('completed')|list|length %}
+                {% set pending_tasks = total_tasks - completed_tasks %}
+                
+                <div class="text-center">
+                    <h3 class="text-primary">{{ total_tasks }}</h3>
+                    <p class="mb-1">Всього завдань</p>
+                </div>
+                
+                <hr>
+                
+                <div class="row text-center">
+                    <div class="col-6">
+                        <h4 class="text-success">{{ completed_tasks }}</h4>
+                        <small>Виконано</small>
+                    </div>
+                    <div class="col-6">
+                        <h4 class="text-warning">{{ pending_tasks }}</h4>
+                        <small>В роботі</small>
+                    </div>
+                </div>
+                
+                {% if total_tasks > 0 %}
+                <div class="mt-3">
+                    <div class="progress">
+                        {% set progress = (completed_tasks / total_tasks * 100)|round %}
+                        <div class="progress-bar" role="progressbar" 
+                             style="width: {{ progress }}%" 
+                             aria-valuenow="{{ progress }}" 
+                             aria-valuemin="0" aria-valuemax="100">
+                            {{ progress }}%
+                        </div>
+                    </div>
+                    <small class="text-muted">Прогрес виконання</small>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="card mt-3">
+            <div class="card-header">
+                <h5>💡 Поради</h5>
+            </div>
+            <div class="card-body">
+                <ul class="list-unstyled">
+                    <li class="mb-2">📅 Встановлюйте реальні дедлайни</li>
+                    <li class="mb-2">📝 Додавайте детальний опис завдань</li>
+                    <li class="mb-2">🏷️ Групуйте завдання за предметами</li>
+                    <li class="mb-2">✅ Регулярно відмічайте виконані завдання</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="addTaskModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">➕ Додати нове завдання</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="addTaskForm">
+                    <div class="mb-3">
+                        <label for="taskTitle" class="form-label">Назва завдання</label>
+                        <input type="text" class="form-control" id="taskTitle" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="taskDescription" class="form-label">Опис</label>
+                        <textarea class="form-control" id="taskDescription" rows="3"></textarea>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="taskSubject" class="form-label">Предмет</label>
+                        <select class="form-select" id="taskSubject" required>
+                            <option value="">Оберіть предмет</option>
+                            <option value="Математика">📐 Математика</option>
+                            <option value="Українська мова">📝 Українська мова</option>
+                            <option value="Англійська мова">🌍 Англійська мова</option>
+                            <option value="Фізика">⚡ Фізика</option>
+                            <option value="Хімія">🧪 Хімія</option>
+                            <option value="Біологія">🌱 Біологія</option>
+                            <option value="Географія">🌍 Географія</option>
+                            <option value="Історія">📚 Історія</option>
+                            <option value="Інформатика">💻 Інформатика</option>
+                            <option value="Інше">📋 Інше</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="taskDueDate" class="form-label">Дедлайн</label>
+                        <input type="date" class="form-control" id="taskDueDate">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Скасувати</button>
+                <button type="button" class="btn btn-success" onclick="addTask()">Додати завдання</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function addTask() {
+    const title = document.getElementById('taskTitle').value;
+    const description = document.getElementById('taskDescription').value;
+    const subject = document.getElementById('taskSubject').value;
+    const dueDate = document.getElementById('taskDueDate').value;
+    
+    if (!title || !subject) {
+        alert('Будь ласка, заповніть обов\'язкові поля');
+        return;
+    }
+    
+    fetch('/add_task', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            title: title,
+            description: description,
+            subject: subject,
+            due_date: dueDate
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert('Помилка при додаванні завдання');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Помилка при додаванні завдання');
+    });
+}
+
+function deleteTask(taskId) {
+    if (confirm('Ви впевнені, що хочете видалити це завдання?')) {
+        fetch(`/delete_task/${taskId}`, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const taskElement = document.querySelector(`[data-task-id="${taskId}"]`);
+                if (taskElement) {
+                    taskElement.remove();
+                }
+                
+                const tasks = JSON.parse(localStorage.getItem('tasks') || '[]');
+                const updatedTasks = tasks.filter(task => task.id !== taskId);
+                localStorage.setItem('tasks', JSON.stringify(updatedTasks));
+                
+                location.reload();
+            } else {
+                alert('Помилка при видаленні завдання');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Помилка при видаленні завдання');
+        });
+    }
+}
+
+function toggleTaskComplete(taskId, completed) {
+    console.log(`Завдання ${taskId} ${completed ? 'виконано' : 'повернуто в роботу'}`);
+    location.reload();
+}
+
+function editTask(taskId) {
+    alert('Функція редагування буде додана в наступних версіях');
+}
+
+document.getElementById('taskDueDate').min = new Date().toISOString().split('T')[0];
+</script>
+{% endblock %}

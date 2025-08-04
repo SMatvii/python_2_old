@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+
+{% block title %}Реєстрація - Шкільний розклад{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="text-center">📝 Реєстрація</h3>
+            </div>
+            <div class="card-body">
+                <form method="POST" id="registerForm">
+                    <div class="mb-3">
+                        <label for="username" class="form-label">Ім'я користувача</label>
+                        <input type="text" class="form-control" id="username" name="username" required>
+                        <div class="form-text">Унікальне ім'я користувача для входу в систему</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="email" class="form-label">Email</label>
+                        <input type="email" class="form-control" id="email" name="email" required>
+                        <div class="form-text">На цю адресу буде відправлено підтвердження реєстрації</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="password" class="form-label">Пароль</label>
+                        <input type="password" class="form-control" id="password" name="password" required>
+                        <div class="form-text">Мінімум 6 символів</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="confirm_password" class="form-label">Підтвердження паролю</label>
+                        <input type="password" class="form-control" id="confirm_password" name="confirm_password" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="role" class="form-label">Роль</label>
+                        <select class="form-select" id="role" name="role">
+                            <option value="student">👨‍🎓 Учень</option>
+                            <option value="teacher">👨‍🏫 Вчитель</option>
+                            <option value="admin">👨‍💼 Адміністратор</option>
+                        </select>
+                    </div>
+                    
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary btn-lg">📝 Зареєструватися</button>
+                    </div>
+                </form>
+                
+                <div class="text-center mt-3">
+                    <p>Вже маєте акаунт? <a href="{{ url_for('login') }}">Увійти</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.getElementById('registerForm').addEventListener('submit', function(e) {
+    const password = document.getElementById('password').value;
+    const confirmPassword = document.getElementById('confirm_password').value;
+    
+    if (password.length < 6) {
+        e.preventDefault();
+        alert('Пароль повинен містити мінімум 6 символів');
+        return;
+    }
+    
+    if (password !== confirmPassword) {
+        e.preventDefault();
+        alert('Паролі не збігаються');
+        return;
+    }
+});
+</script>
+{% endblock %}
